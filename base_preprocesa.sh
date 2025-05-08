@@ -1,12 +1,17 @@
 #!/bin/bash
+# Opciones para depurar script
 set -e
 set -u
-# Este script crea las condiciones necesarias previas para la ejecuci'on
-# del modelo HYCOM - 2025 (Climatologia)
+
+# Este script crea las condiciones iniciales necesarias previas para la ejecuci'on
+# del pronostico HYCOM - 2025 (Se utiliza Climatologia HYCOM-IOA)
+# TAREAS
 # 1. Crea forzamientos
 # 2. Crea archivo limits con la fecha en dias julianos 
+MODELO_HYCOM=/LUSTRE/OPERATIVO/OPERATIVO2/modelos/HYCOM
+cd $MODELO_HYCOM/expt_00.0
 
-# Fecha de inicio de simulacion
+# Fecha actual de inicio de simulacion
 ANIO_INI=$(date +%Y)
 MES_INI=$(date +%m)
 DIA_INI=$(date +%d)
@@ -19,26 +24,19 @@ HORA_FIN=00
 
 export fecha_ini=$ANIO_INI"-"$MES_INI"-"$DIA_INI"_"$HORA_INI
 export fecha_fin=$ANIO_FIN"-"$MES_FIN"-"$DIA_FIN"_"$HORA_FIN
+
 echo $fecha_ini $fecha_fin
 python dias_jul.py $fecha_inicio $fecha_final
-exit 1
-# Ambiente de ejecuci'on
-ml load herramientas/python/latest
-cd /LUSTRE/OPERATIVO/OPERATIVO2/modelos/HYCOM/expt_00.0
-
-python force2ab_operativo.py $fecha_ini 025 0126012
-
-# Automatizar declaracion de fechas
-# fecha_inicio='2025-05-06_12'
-# fecha_final='2025-05-10_00'
-# python dias_jul.py $fecha_inicio $fecha_final
-python dias_jul.py # Crea fecha_ini y fecha_fin simulacion en dias Julianos
-# Formtato de nombre de archivo limits
 # 000y0250126012.limits
 mv limits 000y0250126012.limits
 
-cd /LUSTRE/OPERATIVO/OPERATIVO2/modelos/HYCOM/restart/000
+# exit 1
+# Ambiente de ejecuci'on
+ml load herramientas/python/latest
+python force2ab_operativo.py $fecha_ini 025 0126012
 
+# Crear restart
+cd $MODELO_HYCOM/restart/000
 
 # Correr modelo
 # Verificar que condiciones esten cumplidas
